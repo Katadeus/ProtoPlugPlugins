@@ -15,7 +15,15 @@ local position2 = 0
 local speed1 = 0.01
 local speed2 = 0.01
 local accel = 0.01
+local maxSpeed = 1
+local minSpeed = 0
 local channels = {}
+
+function clamp(i)
+    if(i > maxSpeed) then i = maxSpeed end
+    if(i < minSpeed) then i = minSpeed end
+    return i
+end
 
 function stereoFx.Channel:init()
     table.insert(channels, self)
@@ -44,6 +52,7 @@ function stereoFx.Channel:processBlock(s, blocksize)
             else
                 speed = speed + accel
             end
+            speed = clamp(speed)
             position = s[i]
         elseif position > s[i] then
             if dif2 < accel then
@@ -53,6 +62,7 @@ function stereoFx.Channel:processBlock(s, blocksize)
             else
                 speed = speed + accel
             end
+            speed = clamp(speed)
             position = position - speed
         else
             if dif2 < accel then
@@ -62,6 +72,7 @@ function stereoFx.Channel:processBlock(s, blocksize)
             else
                 speed = speed + accel
             end
+            speed = clamp(speed)
             position = position + speed
         end
         s[i] = position
@@ -81,5 +92,17 @@ plugin.manageParams {
 		min = 0.00001;
 		max = 0.1;
 		changed = function(val) accel = val; end
+	};
+	{
+	    name = "Max Speed";
+	    min = 0;
+	    max = 1;
+	    changed = function(val) maxSpeed = val; end
+	};
+	{
+	    name = "Min Speed";
+	    min = 0;
+	    max = 1;
+	    changed = function(val) minSpeed = val; end
 	};
 }
